@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<script type="module">
+import "https://unpkg.com/chessboard-element/bundled/chessboard-element.bundled.js";
+import { Chess } from "https://taisukef.github.io/chess.js/chess.js";
+import { sleep } from "https://js.sabae.cc/sleep.js";
+import { rnd } from "https://js.sabae.cc/rnd.js";
+
+const board = document.createElement("chess-board");
+board.style.width = "600px";
+document.body.appendChild(board);
+
+const highlightStyles = document.createElement("style");
+document.head.append(highlightStyles);
+const whiteSquareGrey = '#a9a9a9';
+const blackSquareGrey = '#696969';
+function greySquare(square) {
+  const highlightColor = (square.charCodeAt(0) % 2) ^ (square.charCodeAt(1) % 2)
+      ? whiteSquareGrey
+      : blackSquareGrey;
+  
+  highlightStyles.textContent += `
+    chess-board::part(${square}) {
+      background-color: ${highlightColor};
+    }
+  `;
+}
+function removeGreySquares() {
+  highlightStyles.textContent = '';
+}
+const styles = [];
+
+let pendingStyle = '';
+
+const updateHighlights = () => {
+  highlightStyles.textContent = styles.join('\n');
+}
+
+const highlight = (square, color) => `
+  chess-board::part(${square}) {
+    box-shadow: inset 0 0 3px 3px ${color};
+  }
+`;
+
+const chess = new Chess();
+while (!chess.game_over()) {
+    const moves = chess.moves({ verbose: true });
+    for (const move of moves) {
+      greySquare(move.from);
+      greySquare(move.to);
+    }
+    const move = moves[rnd(moves.length)];
+    chess.move(move)
+    //console.log(chess.ascii());
+    console.log(chess.fen());
+    board.setPosition(chess.fen());
+    await sleep(100);
+    removeGreySquares();
+}
+console.log(chess.pgn())
+
+</script>
+

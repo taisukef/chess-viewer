@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title></title>
+</head><bdoy>
+
+<script type="module">
+import { Chess, sleep, rnd } from "./imports.min.js";
+
+const board = document.createElement("chess-board");
+board.style.width = "600px";
+document.body.appendChild(board);
+
+const highlightStyles = document.createElement("style");
+document.head.append(highlightStyles);
+const whiteSquareGrey = '#a9a9a9';
+const blackSquareGrey = '#696969';
+
+const greySquare = (square) => {
+  const white = (square.charCodeAt(0) % 2) ^ (square.charCodeAt(1) % 2);
+  const highlightColor = white ? whiteSquareGrey : blackSquareGrey;
+  highlightStyles.textContent += `
+    chess-board::part(${square}) {
+      background-color: ${highlightColor};
+    }
+  `;
+};
+const highlight = (square, color = "#a33") => {
+  highlightStyles.textContent += `
+    chess-board::part(${square}) {
+      box-shadow: inset 0 0 3px 3px ${color};
+    }
+  `;
+};
+const removeGreySquares = () => highlightStyles.textContent = '';
+
+const chess = new Chess();
+chess.load_pgn("d4 e6 2. Bf4 Bb4+ 3. c3 Ba5 4. e3 g6 5. Bd3 c6 6. Nf3 Nf6 7. Bd6 Na6 8. Nbd2 h5 9. Nc4 b5 10. Nxa5 b4 11. c4 c5 12. dxc5 Qxa5 13. O-O Nxc5 14. Be4 Ncxe4 15. Ng5 Nxd6 16. Qxd6 Qxg5 17. c5 Nd5 18. f4 Nxf4 19. exf4 Qd8 20. Rae1 Ba6 21. Qxa6 h4 22. h3 Rh5 23. g4 Rxc5 24. g5 e5 25. Rxe5+ Rxe5 26. fxe5 Rc8 27. Rf6 Rc2 28. Qf1 Rxb2 29. Rxf7 Rxa2 30. Rf8+ Ke7 31. Qf7# 1-0");
+const history = chess.history({ verbose: true });
+chess.reset();
+for (const h of history) {
+    const moves = chess.moves({ verbose: true });
+    for (const move of moves) {
+      highlight(move.from);
+      greySquare(move.to);
+    }
+    const move = h;
+    chess.move(move)
+    board.setPosition(chess.fen());
+    await sleep(500);
+    removeGreySquares();
+}
+console.log(chess.pgn())
+
+
+</script>
+
